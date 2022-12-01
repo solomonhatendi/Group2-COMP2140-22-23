@@ -53,6 +53,10 @@ public class Item {
         this.quantity = quantity;
     }
 
+    public void decreaseQuantity() {
+        this.quantity -=1;
+    }
+
     public String getManufacturer() {
         return manufacturer;
     }
@@ -113,6 +117,7 @@ public class Item {
     //     this.category = "";
     // }
 
+    @Override    
     public String toString(){
         return "Name: " + name + "\nManufacturer: " + manufacturer + "\nUPC: " + upc + "\nCategory: " + category + "\nUnits: " + quantity + "\nPrice: " + unitPrice + "\nExpiration: " + expirationDate+"\n";
     }

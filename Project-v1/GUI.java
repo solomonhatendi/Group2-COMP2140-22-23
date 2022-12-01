@@ -5,7 +5,6 @@ import java.awt.event.*;
 // Driver class for Dawn’s Grocery Inventory Management System
  
 public class GUI extends JFrame {
-    JTextField usernameField;
     public GUI(){
         // Setting configuration for GUI window
         super("Dawn's Grocery Inventory Management System - Home");
@@ -13,6 +12,7 @@ public class GUI extends JFrame {
         setSize(getToolkit().getScreenSize());
         setResizable(true);
     }
+
     public static void main(String args[]) {
         // Creating instance of GUI which is the main window
         GUI window = new GUI();

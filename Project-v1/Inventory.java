@@ -22,7 +22,7 @@ public class Inventory {
         Item itemToRemove = new Item();
         if(itemsList.size() != 0){
             for(Item i: itemsList){
-                if(i.getUPC() == UPC){
+                if(i.getUPC().equals(UPC)){
                     itemToRemove = i;
                 }
                 itemsList.remove(itemToRemove);
@@ -36,19 +36,35 @@ public class Inventory {
         }
     }
 
-
-    public Item getItem(String UPC){
-        Item itemToReturn = new Item();
+    public void orderItem(String UPC){
         if(itemsList.size() != 0){
             for(Item i: itemsList){
-                if(i.getUPC() == UPC){
-                    itemToReturn = i;
+                if(i.getUPC().equals(UPC)){
+                    i.decreaseQuantity();
                 }
             }
         }
-        return itemToReturn;
     }
 
+    public void orderItems(ArrayList<Item> itemsToRemove){
+        for(Item i: itemsToRemove){
+            i.decreaseQuantity();
+        }
+    }
+
+
+    public Item getItem(String UPC){
+        if(itemsList.size() != 0){
+            for(Item i: itemsList){
+                if(i.getUPC().equals(UPC)){
+                    return i;
+                }
+            }
+        }
+        return new Item();
+    }
+
+    @Override
     public String toString(){
         String str = "";
         for(Item i: itemsList){

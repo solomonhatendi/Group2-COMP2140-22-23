@@ -12,8 +12,8 @@ import javax.swing.table.*;
 // Menu options screen
 public class Menu extends JFrame{
     // Creating instances of the inventory and sales which will be modified depending on menu options
-    Inventory itemsInventory = new Inventory();
-    Sales sales = new Sales();
+    private Inventory itemsInventory = new Inventory();
+    private Sales sales = new Sales();
 
     public Menu(){
         // Setting configuration for Menu window
@@ -21,6 +21,10 @@ public class Menu extends JFrame{
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setPreferredSize(getToolkit().getScreenSize());
         setResizable(true);
+
+        // Adding test data to inventory
+        Item testDataItem = new Item("0 77975 02231 3", "Snyder’s of Hanover Mini Pretzels, 3.5 OZ", 120.00, 35, "Snyder's of Hanover", "23/12/22", "Snacks");
+        itemsInventory.addItem(testDataItem);
 
         // Creating panel to store menu components
         JPanel displayPanel = new JPanel();
@@ -61,6 +65,7 @@ public class Menu extends JFrame{
         private JButton delBtn;
         private JPanel viewPnl;
         private JTable itemsTable;
+        private ViewItemsListener itemFrame;
 
         public ViewItemsListener(){
             // Setting configuration for View Items window
@@ -71,11 +76,11 @@ public class Menu extends JFrame{
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            ViewItemsListener itemFrame = new ViewItemsListener();
+            itemFrame = new ViewItemsListener();
             viewPnl = new JPanel();
 
             // Adding save and delete buttons to edit and delete items
-            saveBtn = new JButton("Save Changes");
+            saveBtn = new JButton("Save");
             saveBtn.setBounds(300, 430, 200, 68);
             saveBtn.addActionListener(new SaveButtonListener());
 
@@ -130,6 +135,8 @@ public class Menu extends JFrame{
                     }
                     
                 }
+                JOptionPane.showMessageDialog(null, "Product information saved.");
+                itemFrame.dispose();
 
             }
         }
@@ -145,8 +152,9 @@ public class Menu extends JFrame{
                             UPC = String.valueOf(itemsTable.getValueAt(i, 0));
                         }                        
                     }
+                    JOptionPane.showMessageDialog(null, "Product information successfully deleted.");
                     itemsInventory.removeItem(UPC);
-
+                    itemFrame.dispose();
             }
         } 
     }
@@ -194,29 +202,51 @@ public class Menu extends JFrame{
         // When create order button is clicked, a new order is created with the selected items, the item is removed from the inventory and a new invoice is generated
         private class OrderBtnListener implements ActionListener{
             public void actionPerformed(ActionEvent h){
-                ArrayList<Item> removeItems = new ArrayList<Item>();
+                ArrayList<Item> orderedItems = new ArrayList<Item>();
+                double orderTotal = 0.0;
+                Date orderDate = new Date();
                 for(int i=0; i< itemsTable.getRowCount(); i++){
                     Object checkboxVal = itemsTable.getValueAt(i, 7);
-                    if(checkboxVal == Boolean.TRUE){
-                        try{
+                    if(checkboxVal.equals(Boolean.TRUE)){
                             String orderUPC = String.valueOf(itemsTable.getValueAt(i, 0));
                             Item orderItem = itemsInventory.getItem(orderUPC);
-                            String orderPrice = String.valueOf(itemsTable.getValueAt(i, 2));
-                            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                            Date dateWithoutTime = formatter.parse(formatter.format(new Date()));
-                            Date orderDate = dateWithoutTime;
-
-                            Order newOrder = new Order(orderItem, Double.parseDouble(orderPrice), orderDate);
-                            sales.addOrder(newOrder);
-                            removeItems.add(orderItem);
-                            Invoice customerInvoice = new Invoice(newOrder);
-
-                        } catch(ParseException dateE){
-                            System.out.println("Error formatting current date");
-                        }
+                            if(orderItem.getQuantity() != 0){
+                                try{
+                                    double itemPrice = Double.parseDouble(String.valueOf(itemsTable.getValueAt(i, 2)));
+                                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                                    Date dateWithoutTime = formatter.parse(formatter.format(new Date()));
+                                    orderDate = dateWithoutTime;
+                                    orderedItems.add(orderItem);
+                                    orderTotal += itemPrice;
+                                } catch(ParseException dateE){
+                                    System.out.println("Error formatting current date");
+                                }
+                            } else{
+                                JOptionPane.showMessageDialog(null, "One or more of the selected items is out of stock. Only available items will be added to invoice.");
+                            }
                     }
                 }
-                itemsInventory.removeItems(removeItems);
+                
+                Order newOrder = new Order(orderedItems,orderTotal, orderDate);
+                sales.addOrder(newOrder);
+                
+                Invoice customerInvoice = new Invoice(newOrder);
+
+                // Creating new window to show invoice details
+                JFrame invoiceFrame = new JFrame("Order #" + customerInvoice.getOrder().getOrderID() + " Invoice");
+                invoiceFrame.setSize(getToolkit().getScreenSize()); 
+                invoiceFrame.setResizable(true);
+
+                JPanel invPnl = new JPanel();
+
+                String invoiceInfo = customerInvoice.displayInvoice();
+                JTextArea invoiceInfoLabel = new JTextArea(invoiceInfo, 36, 5);
+                invPnl.add(invoiceInfoLabel);
+
+                invoiceFrame.add(invPnl);
+                invoiceFrame.pack();
+                invoiceFrame.setVisible(true);
+                itemsInventory.orderItems(orderedItems);
             }
         }
 
@@ -362,6 +392,11 @@ public class Menu extends JFrame{
                 String manValue = manField.getText();
                 String expValue = expField.getText();
                 String catValue = catField.getText();
+
+                // System.out.println(itemsInventory.getItem(upcValue).getUPC());
+                if(!(itemsInventory.getItem(upcValue).getUPC() == null)){
+                    JOptionPane.showMessageDialog(null, "UPC already exists. Please enter a different value.");
+                }
               
                 // If input value is incorrect, an error will be thrown
                 try{
@@ -371,7 +406,7 @@ public class Menu extends JFrame{
                     JOptionPane.showMessageDialog(null, "An error occurred. Please double check your input values.");
                 }
                 
-                System.out.println(itemsInventory);
+                // System.out.println(itemsInventory);
                 itemFrame.dispose();
             }
         }

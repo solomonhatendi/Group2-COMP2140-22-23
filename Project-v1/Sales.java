@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class Sales {
     private final int id;
-    private static final AtomicInteger counter = new AtomicInteger();
+    private static final AtomicInteger counter = new AtomicInteger(1000);
     private ArrayList<Order> orders;
     private Date date;
     private int salesPerItem;
@@ -54,6 +54,7 @@ public class Sales {
         this.salesPerItem = salesPerItem;
     }
 
+    @Override
     public String toString(){
         String str = "Sale: " + id + "\n";
         for(Order o: orders){

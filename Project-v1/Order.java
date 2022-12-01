@@ -1,15 +1,18 @@
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.ArrayList;
+
 
 public class Order {
     private final int orderID;
-    private static final AtomicInteger counter = new AtomicInteger();
-    private Item item;
+    private static final AtomicInteger counter = new AtomicInteger(1000);
+    private ArrayList<Item> listofItems;
+    // private Item item;
     private double total;
     private Date date;
 
-    public Order(Item item, double total, Date date){
-        this.item = item;
+    public Order(ArrayList<Item> itemsList, double total, Date date){
+        this.listofItems = itemsList;
         this.total = total;
         this.date = date;
         orderID = counter.incrementAndGet();
@@ -19,16 +22,16 @@ public class Order {
         orderID = counter.incrementAndGet();
     }
 
-    public Item getItem() {
-        return item;
+    public ArrayList<Item> getItemsList() {
+        return listofItems;
     }
 
     public int getOrderID() {
         return orderID;
     }
 
-    public void setItem(Item item) {
-        this.item = item;
+    public void setItems(ArrayList<Item> itemsList) {
+        this.listofItems = itemsList;
     }
 
     public double getTotal() {
@@ -39,6 +42,13 @@ public class Order {
         this.total = total;
     }
 
+    public double addTax(){
+        double taxPercent = 0.15;
+        double amtTaxed = total * taxPercent;
+        double newTotal = amtTaxed + this.total;
+        return newTotal;
+    }
+
     public Date getDate() {
         return date;
     }
@@ -47,7 +57,8 @@ public class Order {
         this.date = date;
     }
 
+    @Override
     public String toString(){
-        return "Order: "+ getOrderID() + "\n" + getItem();
+        return "Order: "+ getOrderID() + "\n";
     }
 }
