@@ -205,48 +205,58 @@ public class Menu extends JFrame{
                 ArrayList<Item> orderedItems = new ArrayList<Item>();
                 double orderTotal = 0.0;
                 Date orderDate = new Date();
-                for(int i=0; i< itemsTable.getRowCount(); i++){
-                    Object checkboxVal = itemsTable.getValueAt(i, 7);
-                    if(checkboxVal.equals(Boolean.TRUE)){
-                            String orderUPC = String.valueOf(itemsTable.getValueAt(i, 0));
-                            Item orderItem = itemsInventory.getItem(orderUPC);
-                            if(orderItem.getQuantity() != 0){
-                                try{
-                                    double itemPrice = Double.parseDouble(String.valueOf(itemsTable.getValueAt(i, 2)));
-                                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                                    Date dateWithoutTime = formatter.parse(formatter.format(new Date()));
-                                    orderDate = dateWithoutTime;
-                                    orderedItems.add(orderItem);
-                                    orderTotal += itemPrice;
-                                } catch(ParseException dateE){
-                                    System.out.println("Error formatting current date");
+                if(itemsTable.getSelectedRow() != -1){
+                    for(int i=0; i< itemsTable.getRowCount(); i++){
+                        Object checkboxVal = itemsTable.getValueAt(i, 7);
+                        if(checkboxVal.equals(Boolean.TRUE)){
+                                String orderUPC = String.valueOf(itemsTable.getValueAt(i, 0));
+                                Item orderItem = itemsInventory.getItem(orderUPC);
+                                if(orderItem.getQuantity() != 0){
+                                    try{
+                                        double itemPrice = Double.parseDouble(String.valueOf(itemsTable.getValueAt(i, 2)));
+                                        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
+                                        Date dateWithoutTime = formatter.parse(formatter.format(new Date()));
+                                        orderDate = dateWithoutTime;
+                                        orderedItems.add(orderItem);
+                                        orderTotal += itemPrice;
+                                    } catch(ParseException dateE){
+                                        System.out.println("Error formatting current date");
+                                    }
+                                } else{
+                                    JOptionPane.showMessageDialog(null, "One or more of the selected items is out of stock. Only available items will be added to invoice.");
                                 }
-                            } else{
-                                JOptionPane.showMessageDialog(null, "One or more of the selected items is out of stock. Only available items will be added to invoice.");
-                            }
+                        }
                     }
+                    if(orderedItems.size() != 0){
+                        Order newOrder = new Order(orderedItems,orderTotal, orderDate);
+                        sales.addOrder(newOrder);
+                        
+                        Invoice customerInvoice = new Invoice(newOrder);
+        
+                        // Creating new window to show invoice details
+                        JFrame invoiceFrame = new JFrame("Order #" + customerInvoice.getOrder().getOrderID() + " Invoice");
+                        invoiceFrame.setSize(getToolkit().getScreenSize()); 
+                        invoiceFrame.setResizable(true);
+        
+                        JPanel invPnl = new JPanel();
+        
+                        String invoiceInfo = customerInvoice.displayInvoice();
+                        JTextArea invoiceInfoLabel = new JTextArea(invoiceInfo, 36, 5);
+                        invPnl.add(invoiceInfoLabel);
+        
+                        invoiceFrame.add(invPnl);
+                        invoiceFrame.pack();
+                        invoiceFrame.setVisible(true);
+                        itemsInventory.orderItems(orderedItems);
+                    } else{
+                        JOptionPane.showMessageDialog(null, "Selected items are out of stock. Invoice could not be generated.");
+                    }
+                    
+                    
+                } else{
+                    JOptionPane.showMessageDialog(null, "No items selected.");
                 }
-                
-                Order newOrder = new Order(orderedItems,orderTotal, orderDate);
-                sales.addOrder(newOrder);
-                
-                Invoice customerInvoice = new Invoice(newOrder);
-
-                // Creating new window to show invoice details
-                JFrame invoiceFrame = new JFrame("Order #" + customerInvoice.getOrder().getOrderID() + " Invoice");
-                invoiceFrame.setSize(getToolkit().getScreenSize()); 
-                invoiceFrame.setResizable(true);
-
-                JPanel invPnl = new JPanel();
-
-                String invoiceInfo = customerInvoice.displayInvoice();
-                JTextArea invoiceInfoLabel = new JTextArea(invoiceInfo, 36, 5);
-                invPnl.add(invoiceInfoLabel);
-
-                invoiceFrame.add(invPnl);
-                invoiceFrame.pack();
-                invoiceFrame.setVisible(true);
-                itemsInventory.orderItems(orderedItems);
+           
             }
         }
 
